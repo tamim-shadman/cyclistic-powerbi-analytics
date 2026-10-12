@@ -88,6 +88,9 @@ const PAGE_TITLES = {
 
 function setupNavigation() {
   const navItems = document.querySelectorAll('.nav-item');
+  const sidebar = document.getElementById('appSidebar');
+  const backdrop = document.getElementById('sidebarBackdrop');
+
   navItems.forEach(item => {
     item.addEventListener('click', () => {
       navItems.forEach(n => n.classList.remove('active'));
@@ -110,9 +113,18 @@ function setupNavigation() {
         window.dispatchEvent(new Event('resize'));
       }
 
+      // Automatically close drawer on mobile/tablet after selection
+      if (window.innerWidth <= 1024 && sidebar) {
+        sidebar.classList.remove('mobile-open');
+        if (backdrop) backdrop.classList.remove('active');
+      }
+
       // If page 4, initialize or invalidate leaflet map size
       if (targetPage === 'page4') {
         setTimeout(initLeafletMap, 150);
+        setTimeout(() => {
+          if (leafletMap) leafletMap.invalidateSize();
+        }, 350);
       }
     });
   });
@@ -121,12 +133,47 @@ function setupNavigation() {
 function setupSidebarToggle() {
   const btn = document.getElementById('toggleSidebarBtn');
   const sidebar = document.getElementById('appSidebar');
-  btn.addEventListener('click', () => {
-    state.sidebarCollapsed = !state.sidebarCollapsed;
-    sidebar.classList.toggle('collapsed', state.sidebarCollapsed);
-    setTimeout(() => {
-      window.dispatchEvent(new Event('resize'));
-    }, 250);
+  const closeBtn = document.getElementById('sidebarCloseBtn');
+  const backdrop = document.getElementById('sidebarBackdrop');
+
+  const closeMobileSidebar = () => {
+    if (sidebar) sidebar.classList.remove('mobile-open');
+    if (backdrop) backdrop.classList.remove('active');
+  };
+
+  if (btn && sidebar) {
+    btn.addEventListener('click', () => {
+      if (window.innerWidth <= 1024) {
+        sidebar.classList.toggle('mobile-open');
+        if (backdrop) backdrop.classList.toggle('active', sidebar.classList.contains('mobile-open'));
+      } else {
+        state.sidebarCollapsed = !state.sidebarCollapsed;
+        sidebar.classList.toggle('collapsed', state.sidebarCollapsed);
+      }
+      setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+        if (leafletMap && state.activePage === 'page4') {
+          leafletMap.invalidateSize();
+        }
+      }, 260);
+    });
+  }
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', closeMobileSidebar);
+  }
+
+  if (backdrop) {
+    backdrop.addEventListener('click', closeMobileSidebar);
+  }
+
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 1024) {
+      closeMobileSidebar();
+    }
+    if (leafletMap && state.activePage === 'page4') {
+      leafletMap.invalidateSize();
+    }
   });
 }
 

@@ -157,6 +157,43 @@ body {
   font-weight: 600;
 }
 
+.btn-sidebar-close {
+  display: none;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-left: auto;
+  transition: all 0.2s ease;
+}
+
+.btn-sidebar-close:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+}
+
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 990;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.sidebar-backdrop.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 .sidebar-section-title {
   font-size: 0.65rem;
   font-weight: 700;
@@ -533,17 +570,6 @@ body.dark-mode .badge-tag.live {
   grid-template-columns: repeat(4, 1fr);
 }
 
-@media (max-width: 1250px) {
-  .kpi-banner-grid, .kpi-banner-grid.four-col {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-@media (max-width: 800px) {
-  .kpi-banner-grid, .kpi-banner-grid.four-col {
-    grid-template-columns: 1fr;
-  }
-}
-
 .new-card-visual {
   background: var(--bg-card);
   border: 1px solid var(--border-card);
@@ -685,12 +711,6 @@ body.dark-mode .badge-tag.live {
 .grid-span-7 { grid-column: span 7; }
 .grid-span-8 { grid-column: span 8; }
 .grid-span-12 { grid-column: span 12; }
-
-@media (max-width: 1100px) {
-  .grid-span-4, .grid-span-5, .grid-span-6, .grid-span-7, .grid-span-8 {
-    grid-column: span 12;
-  }
-}
 
 .pbi-visual-card {
   background: var(--bg-card);
@@ -1123,12 +1143,6 @@ body.dark-mode .map-floating-panel {
   margin-bottom: 1.35rem;
 }
 
-@media (max-width: 800px) {
-  .whatif-ribbon-card {
-    grid-template-columns: 1fr;
-  }
-}
-
 .whatif-slider-cell {
   display: flex;
   flex-direction: column;
@@ -1267,12 +1281,6 @@ input[type="range"] {
   gap: 1.5rem;
 }
 
-@media (max-width: 950px) {
-  .briefing-pillars-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
 .briefing-pillar-card {
   background: var(--bg-card);
   border: 1px solid var(--border-card);
@@ -1347,17 +1355,6 @@ input[type="range"] {
   gap: 1.2rem;
 }
 
-@media (max-width: 1000px) {
-  .action-cards-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-@media (max-width: 600px) {
-  .action-cards-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
 .action-card {
   background: var(--bg-card-subtle);
   border: 1px solid var(--border-card);
@@ -1430,4 +1427,671 @@ input[type="range"] {
 
 .sep {
   color: var(--border-strong);
+}
+
+/* ==============================================================================
+   RESPONSIVE DESIGN SYSTEM (DESKTOP, LAPTOP, TABLET, MOBILE)
+   ============================================================================== */
+
+/* Base responsiveness adjustments */
+html, body {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+.app-layout {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+.app-main {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* --------------------------------------------------------------------------
+   BREAKPOINT: 1250px (Laptops & Small Desktop Monitors)
+   -------------------------------------------------------------------------- */
+@media (max-width: 1250px) {
+  .kpi-banner-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .kpi-banner-grid.four-col {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .canvas-viewport {
+    padding: 1.25rem 1.5rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   BREAKPOINT: 1024px (Tablets, iPad Landscape/Portrait & Small Laptops)
+   -------------------------------------------------------------------------- */
+@media (max-width: 1024px) {
+  /* Sidebar Drawer Overlay */
+  .pbi-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 290px;
+    max-width: 82vw;
+    height: 100vh;
+    z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s ease;
+    box-shadow: none;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .pbi-sidebar.mobile-open {
+    transform: translateX(0);
+    box-shadow: 14px 0 36px rgba(0, 0, 0, 0.45);
+  }
+
+  /* When drawer opens on mobile/tablet, force display all labels and badges */
+  .pbi-sidebar.mobile-open .brand-text,
+  .pbi-sidebar.mobile-open .sidebar-section-title,
+  .pbi-sidebar.mobile-open .nav-label,
+  .pbi-sidebar.mobile-open .nav-badge,
+  .pbi-sidebar.mobile-open .sidebar-footer {
+    display: flex !important;
+  }
+
+  .pbi-sidebar.mobile-open .sidebar-footer {
+    display: block !important;
+  }
+
+  .pbi-sidebar.mobile-open .nav-item {
+    justify-content: flex-start !important;
+    padding: 0.7rem 0.85rem !important;
+  }
+
+  .btn-sidebar-close {
+    display: flex;
+  }
+
+  /* Grid Layout: Stack 12-column spans into full width cards */
+  .grid-layout-12 {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .grid-span-4,
+  .grid-span-5,
+  .grid-span-6,
+  .grid-span-7,
+  .grid-span-8,
+  .grid-span-12 {
+    grid-column: span 1 !important;
+  }
+
+  /* Temporal Stats Stack: Reflow horizontally across 3 columns on tablet */
+  .stat-cards-column {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+
+  /* Briefing Pillars & Roadmap Grid */
+  .briefing-pillars-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+  }
+
+  .action-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  /* Slicers Ribbon */
+  .pbi-ribbon {
+    padding: 0.75rem 1.25rem;
+  }
+
+  .pbi-header {
+    padding: 0.75rem 1.25rem;
+  }
+
+  .canvas-viewport {
+    padding: 1.15rem 1.25rem;
+  }
+
+  .leaflet-map-wrapper {
+    height: 420px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   BREAKPOINT: 768px (Tablets Portrait & Mobile)
+   -------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+  /* Header adjustments */
+  .pbi-header {
+    padding: 0.65rem 0.95rem;
+    gap: 0.75rem;
+  }
+
+  .header-left {
+    gap: 0.65rem;
+    min-width: 0;
+  }
+
+  .page-title-row {
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+  }
+
+  .page-title {
+    font-size: 1.05rem;
+  }
+
+  .badge-tag.live {
+    font-size: 0.6rem;
+    padding: 0.1rem 0.45rem;
+  }
+
+  .page-desc {
+    font-size: 0.72rem;
+    line-height: 1.35;
+    margin-top: 0.15rem;
+  }
+
+  .header-right {
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  .quick-stat-badge {
+    padding: 0.3rem 0.55rem;
+    gap: 0.35rem;
+  }
+
+  .stat-title {
+    font-size: 0.62rem;
+  }
+
+  .stat-val {
+    font-size: 0.8rem;
+  }
+
+  .btn-theme-toggle,
+  .btn-icon {
+    width: 34px;
+    height: 34px;
+  }
+
+  /* Global Slicers Ribbon: Clean 2-column touch-friendly grid */
+  .pbi-ribbon {
+    padding: 0.65rem 0.95rem;
+    gap: 0.5rem;
+  }
+
+  .slicers-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.55rem;
+    width: 100%;
+  }
+
+  .slicer-box {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.2rem;
+    width: 100%;
+  }
+
+  .slicer-label {
+    font-size: 0.64rem;
+  }
+
+  .slicer-control {
+    width: 100%;
+    min-height: 36px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.78rem;
+  }
+
+  .btn-clear-filters {
+    grid-column: span 2;
+    margin-left: 0;
+    width: 100%;
+    justify-content: center;
+    min-height: 36px;
+    padding: 0.45rem 0.75rem;
+    font-size: 0.74rem;
+  }
+
+  /* Active Filter Chips: Horizontal scrolling pills */
+  .active-chips-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    padding: 0.25rem 0;
+    scrollbar-width: none;
+  }
+
+  .active-chips-row::-webkit-scrollbar {
+    display: none;
+  }
+
+  .filter-chip {
+    flex-shrink: 0;
+    font-size: 0.68rem;
+    padding: 0.15rem 0.5rem;
+  }
+
+  /* Canvas viewport */
+  .canvas-viewport {
+    padding: 0.85rem 0.85rem;
+  }
+
+  /* KPI Visuals Grid */
+  .kpi-banner-grid,
+  .kpi-banner-grid.four-col {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .new-card-visual {
+    padding: 0.85rem 0.95rem;
+  }
+
+  .card-big-val {
+    font-size: 1.55rem;
+  }
+
+  .card-sparkline {
+    width: 65px;
+    height: 22px;
+  }
+
+  /* Card visual headers */
+  .pbi-visual-card {
+    padding: 1rem;
+  }
+
+  .visual-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.45rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .visual-tools {
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    font-size: 0.68rem;
+  }
+
+  .visual-heading {
+    font-size: 0.9rem;
+  }
+
+  .visual-subheading {
+    font-size: 0.72rem;
+  }
+
+  /* Chart canvas heights scaled for mobile/tablet */
+  .h-300,
+  .h-310,
+  .h-320 {
+    height: 250px;
+  }
+
+  .h-380 {
+    height: 290px;
+  }
+
+  /* Callout Banners */
+  .executive-callout-card {
+    padding: 0.9rem 1rem;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .callout-badge-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .callout-badge-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .callout-content h4 {
+    font-size: 0.86rem;
+  }
+
+  .callout-content p {
+    font-size: 0.76rem;
+  }
+
+  /* Data Tables Mobile Optimization */
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+  }
+
+  .pbi-data-table {
+    min-width: 580px;
+  }
+
+  .pbi-data-table th,
+  .pbi-data-table td {
+    padding: 0.6rem 0.7rem;
+    font-size: 0.76rem;
+    white-space: nowrap;
+  }
+
+  /* Temporal Stats Stack */
+  .stat-cards-column {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .stat-highlight-tile {
+    padding: 0.9rem;
+  }
+
+  .stat-tile-value {
+    font-size: 1.4rem;
+  }
+
+  /* 24x7 Heatmap sticky first column */
+  .heatmap-scroll-box {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+  }
+
+  .heatmap-legend {
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    font-size: 0.68rem;
+  }
+
+  .hm-cell:first-child {
+    position: sticky;
+    left: 0;
+    background: var(--bg-card);
+    z-index: 5;
+    box-shadow: 2px 0 4px rgba(0, 0, 0, 0.08);
+  }
+
+  body.dark-mode .hm-cell:first-child {
+    background: var(--bg-card);
+  }
+
+  /* Leaflet Map & Floating Card */
+  .leaflet-map-wrapper {
+    height: 380px;
+  }
+
+  .map-floating-panel {
+    position: absolute;
+    top: auto;
+    bottom: 8px;
+    left: 8px;
+    right: 8px;
+    max-width: none;
+    width: auto;
+    padding: 0.65rem 0.85rem;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .panel-header {
+    font-size: 0.6rem;
+    margin-bottom: 0.15rem;
+  }
+
+  .panel-station-name {
+    font-size: 0.82rem;
+    margin-bottom: 0.4rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .panel-metrics-grid {
+    gap: 0.45rem;
+  }
+
+  .p-label {
+    font-size: 0.6rem;
+  }
+
+  .p-val {
+    font-size: 0.78rem;
+  }
+
+  /* What-If Simulator */
+  .whatif-ribbon-card {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+    gap: 1.15rem;
+  }
+
+  .slider-ticks {
+    font-size: 0.65rem;
+  }
+
+  .funnel-tier {
+    width: 100% !important;
+    padding: 0.75rem 1rem;
+  }
+
+  .matrix-table {
+    min-width: 500px;
+  }
+
+  /* Executive Briefing Page */
+  .briefing-container {
+    gap: 1.25rem;
+  }
+
+  .briefing-header h2 {
+    font-size: 1.45rem;
+  }
+
+  .briefing-header p {
+    font-size: 0.84rem;
+  }
+
+  .briefing-pillars-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .briefing-actions-section {
+    padding: 1.25rem;
+  }
+
+  .action-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+  }
+
+  /* Footer Statusbar */
+  .pbi-statusbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.45rem;
+    padding: 0.65rem 0.95rem;
+    font-size: 0.68rem;
+  }
+
+  .status-right {
+    flex-wrap: wrap;
+    gap: 0.3rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   BREAKPOINT: 480px (Standard & Small Mobile Phones)
+   -------------------------------------------------------------------------- */
+@media (max-width: 480px) {
+  /* Header Title & ARR badge */
+  .page-title {
+    font-size: 0.98rem;
+  }
+
+  .page-desc {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .quick-stat-badge .stat-title {
+    display: none;
+  }
+
+  .quick-stat-badge {
+    padding: 0.25rem 0.45rem;
+  }
+
+  .stat-val {
+    font-size: 0.75rem;
+  }
+
+  /* Slicers 1-column on ultra-compact screens */
+  .slicers-container {
+    grid-template-columns: 1fr;
+    gap: 0.45rem;
+  }
+
+  .btn-clear-filters {
+    grid-column: span 1;
+  }
+
+  /* KPI 1-column stacked */
+  .kpi-banner-grid,
+  .kpi-banner-grid.four-col {
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
+  }
+
+  .new-card-visual {
+    padding: 0.75rem 0.85rem;
+  }
+
+  .card-big-val {
+    font-size: 1.45rem;
+  }
+
+  .card-caption {
+    font-size: 0.62rem;
+  }
+
+  .card-bottom-labels {
+    font-size: 0.66rem;
+  }
+
+  /* Canvas viewport */
+  .canvas-viewport {
+    padding: 0.65rem 0.65rem;
+  }
+
+  .pbi-visual-card {
+    padding: 0.85rem;
+  }
+
+  .h-300,
+  .h-310,
+  .h-320 {
+    height: 220px;
+  }
+
+  .h-380 {
+    height: 250px;
+  }
+
+  .donut-center-metric .metric-number {
+    font-size: 1.15rem;
+  }
+
+  .donut-center-metric .metric-text {
+    font-size: 0.6rem;
+  }
+
+  .leaflet-map-wrapper {
+    height: 330px;
+  }
+
+  .map-floating-panel {
+    padding: 0.55rem 0.7rem;
+  }
+
+  .panel-metrics-grid {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.25rem;
+  }
+
+  .panel-station-name {
+    font-size: 0.75rem;
+  }
+
+  .slider-display-badge {
+    font-size: 0.85rem;
+    padding: 0.15rem 0.45rem;
+  }
+
+  .funnel-tier {
+    padding: 0.65rem 0.85rem;
+  }
+
+  .tier-info {
+    font-size: 0.75rem;
+  }
+
+  .briefing-header h2 {
+    font-size: 1.25rem;
+  }
+
+  .briefing-pillar-card {
+    padding: 1.15rem;
+  }
+
+  .pillar-num {
+    font-size: 1.8rem;
+  }
+
+  .stat-big {
+    font-size: 1.5rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   TOUCH TARGETS & ACCESSIBILITY
+   -------------------------------------------------------------------------- */
+@media (hover: none) and (pointer: coarse) {
+  .nav-item,
+  .slicer-control,
+  .btn-clear-filters,
+  .btn-theme-toggle,
+  .btn-icon,
+  .btn-sidebar-close {
+    min-height: 42px;
+  }
+
+  .hm-cell {
+    height: 32px;
+  }
 }

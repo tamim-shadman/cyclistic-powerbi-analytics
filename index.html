@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <!-- Leaflet Map CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=4.0">
   <!-- Chart.js & Leaflet JS -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -18,7 +18,10 @@
 <body class="light-mode">
   <div class="app-layout">
     
-    <!-- ================= MODERN POWER BI LEFT SIDEBAR ================= -->
+    <!-- Edge Hover Trigger Strip (Desktop Hover Activation) -->
+    <div class="sidebar-hover-zone" id="sidebarHoverZone" title="Hover to view navigation"></div>
+
+    <!-- ================= MODERN POWER BI LEFT SIDEBAR (HOVERING OVERLAY) ================= -->
     <aside class="pbi-sidebar" id="appSidebar">
       <div class="sidebar-brand">
         <div class="brand-glyph">
@@ -927,6 +930,6 @@
     </div>
   </div>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=4.0"></script>
 </body>
 </html>

@@ -70,6 +70,21 @@ document.addEventListener('DOMContentLoaded', () => {
   renderODRoutes();
   renderSensitivityMatrix();
 
+  // Support direct URL hash linking (e.g. #page2)
+  const initialHash = window.location.hash.replace('#', '');
+  if (initialHash && document.getElementById(initialHash)) {
+    const navBtn = document.querySelector(`.nav-item[data-page="${initialHash}"]`);
+    if (navBtn) navBtn.click();
+  }
+
+  window.addEventListener('hashchange', () => {
+    const currentHash = window.location.hash.replace('#', '');
+    if (currentHash && document.getElementById(currentHash)) {
+      const navBtn = document.querySelector(`.nav-item[data-page="${currentHash}"]`);
+      if (navBtn) navBtn.click();
+    }
+  });
+
   // Lazy init leaflet when user switches to page 4
   state.selectedStation = STATIONS[0];
 });
@@ -110,14 +125,19 @@ function setupNavigation() {
       const activeEl = document.getElementById(targetPage);
       if (activeEl) {
         activeEl.classList.add('active');
-        window.dispatchEvent(new Event('resize'));
+        initPageCharts(targetPage);
       }
 
-      // Automatically close drawer on mobile/tablet after selection
-      if (window.innerWidth <= 1024 && sidebar) {
-        sidebar.classList.remove('mobile-open');
+      // Automatically close hovering drawer after selection
+      if (sidebar) {
+        sidebar.classList.remove('open', 'hover-active', 'mobile-open');
         if (backdrop) backdrop.classList.remove('active');
       }
+
+      // Trigger multi-pass chart resizing to guarantee perfect fit as layout settles
+      requestAnimationFrame(resizeAllCharts);
+      setTimeout(resizeAllCharts, 80);
+      setTimeout(resizeAllCharts, 260);
 
       // If page 4, initialize or invalidate leaflet map size
       if (targetPage === 'page4') {
@@ -135,42 +155,119 @@ function setupSidebarToggle() {
   const sidebar = document.getElementById('appSidebar');
   const closeBtn = document.getElementById('sidebarCloseBtn');
   const backdrop = document.getElementById('sidebarBackdrop');
+  const hoverZone = document.getElementById('sidebarHoverZone');
 
-  const closeMobileSidebar = () => {
-    if (sidebar) sidebar.classList.remove('mobile-open');
-    if (backdrop) backdrop.classList.remove('active');
+  let isPinned = false;
+  let hoverTimeout = null;
+
+  const openHoverSidebar = () => {
+    if (!sidebar || isPinned) return;
+    clearTimeout(hoverTimeout);
+    sidebar.classList.add('hover-active');
   };
 
-  if (btn && sidebar) {
-    btn.addEventListener('click', () => {
-      if (window.innerWidth <= 1024) {
-        sidebar.classList.toggle('mobile-open');
-        if (backdrop) backdrop.classList.toggle('active', sidebar.classList.contains('mobile-open'));
+  const closeHoverSidebar = () => {
+    if (!sidebar || isPinned) return;
+    hoverTimeout = setTimeout(() => {
+      sidebar.classList.remove('hover-active');
+    }, 200);
+  };
+
+  const pinOpenSidebar = () => {
+    if (!sidebar) return;
+    isPinned = true;
+    sidebar.classList.add('open');
+    sidebar.classList.remove('hover-active');
+    if (backdrop) backdrop.classList.add('active');
+    setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+    }, 280);
+  };
+
+  const closeAllSidebar = () => {
+    if (!sidebar) return;
+    isPinned = false;
+    clearTimeout(hoverTimeout);
+    sidebar.classList.remove('open', 'hover-active', 'mobile-open');
+    if (backdrop) backdrop.classList.remove('active');
+    setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+    }, 280);
+  };
+
+  // Click toggle button: pins open or closes
+  if (btn) {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (sidebar && (sidebar.classList.contains('open') || sidebar.classList.contains('mobile-open'))) {
+        closeAllSidebar();
       } else {
-        state.sidebarCollapsed = !state.sidebarCollapsed;
-        sidebar.classList.toggle('collapsed', state.sidebarCollapsed);
+        pinOpenSidebar();
       }
-      setTimeout(() => {
-        window.dispatchEvent(new Event('resize'));
-        if (leafletMap && state.activePage === 'page4') {
-          leafletMap.invalidateSize();
-        }
-      }, 260);
+    });
+
+    // Hover on button (desktop devices with hover capability)
+    btn.addEventListener('mouseenter', () => {
+      if (window.matchMedia('(hover: hover)').matches) {
+        openHoverSidebar();
+      }
+    });
+
+    btn.addEventListener('mouseleave', () => {
+      if (window.matchMedia('(hover: hover)').matches) {
+        closeHoverSidebar();
+      }
+    });
+  }
+
+  // Left screen edge hover zone (desktop hover trigger)
+  if (hoverZone) {
+    hoverZone.addEventListener('mouseenter', () => {
+      if (window.matchMedia('(hover: hover)').matches) {
+        openHoverSidebar();
+      }
+    });
+
+    hoverZone.addEventListener('mouseleave', () => {
+      if (window.matchMedia('(hover: hover)').matches) {
+        closeHoverSidebar();
+      }
+    });
+  }
+
+  // Hovering over the sidebar itself keeps it open
+  if (sidebar) {
+    sidebar.addEventListener('mouseenter', () => {
+      if (window.matchMedia('(hover: hover)').matches) {
+        clearTimeout(hoverTimeout);
+      }
+    });
+
+    sidebar.addEventListener('mouseleave', () => {
+      if (window.matchMedia('(hover: hover)').matches) {
+        closeHoverSidebar();
+      }
     });
   }
 
   if (closeBtn) {
-    closeBtn.addEventListener('click', closeMobileSidebar);
+    closeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closeAllSidebar();
+    });
   }
 
   if (backdrop) {
-    backdrop.addEventListener('click', closeMobileSidebar);
+    backdrop.addEventListener('click', closeAllSidebar);
   }
 
+  // Close on Escape key press
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeAllSidebar();
+  });
+
   window.addEventListener('resize', () => {
-    if (window.innerWidth > 1024) {
-      closeMobileSidebar();
-    }
+    resizeAllCharts();
     if (leafletMap && state.activePage === 'page4') {
       leafletMap.invalidateSize();
     }
@@ -355,16 +452,43 @@ function renderSensitivityMatrix() {
 // --------------------------------------------------------------------------
 // 5. CHART INITIALIZATION
 // --------------------------------------------------------------------------
+const initializedPages = new Set(['page1']);
+
+function initPageCharts(targetPage) {
+  if (!targetPage) return;
+  if (!initializedPages.has(targetPage)) {
+    initializedPages.add(targetPage);
+    if (targetPage === 'page2') {
+      initChartHourlyProfile();
+      initChartTripDurationBuckets();
+      initChartDayOfWeek();
+    } else if (targetPage === 'page3') {
+      initChartMonthlySeasonality();
+    } else if (targetPage === 'page4') {
+      initChartNetStationFlow();
+    }
+  }
+  resizeAllCharts();
+}
+
+function resizeAllCharts() {
+  Object.values(charts).forEach(c => {
+    if (c && typeof c.resize === 'function') {
+      try {
+        c.resize();
+      } catch (err) {
+        console.warn('Chart resize:', err);
+      }
+    }
+  });
+}
+
 function initAllCharts() {
+  // Page 1 charts initialized immediately on load
   initChartTrendDaily();
   initChartUserSplit();
   initChartTopStations();
   initChartBikeFleet();
-  initChartHourlyProfile();
-  initChartTripDurationBuckets();
-  initChartDayOfWeek();
-  initChartMonthlySeasonality();
-  initChartNetStationFlow();
 }
 
 function updateAllCharts() {
@@ -612,8 +736,11 @@ function initChartHourlyProfile() {
         tooltip: { mode: 'index', intersect: false }
       },
       scales: {
-        x: { grid: { display: false }, ticks: { maxTicksLimit: 12, color: THEME.text } },
-        y: { grid: { color: THEME.grid }, ticks: { color: THEME.text } }
+        x: {
+          grid: { display: false },
+          ticks: { maxTicksLimit: 8, color: THEME.text, font: { size: 10 } }
+        },
+        y: { grid: { color: THEME.grid }, ticks: { color: THEME.text, font: { size: 10 } } }
       }
     }
   });
@@ -625,7 +752,7 @@ function initChartTripDurationBuckets() {
   charts.tripDuration = new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: ['Short (<15 min)', 'Medium (15-60 min)', 'Long (>60 min)'],
+      labels: ['Short (<15m)', 'Medium (15-60m)', 'Long (>60m)'],
       datasets: [
         {
           label: 'Member',
@@ -645,12 +772,23 @@ function initChartTripDurationBuckets() {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        legend: { position: 'top', labels: { boxWidth: 12 } },
+        legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11 } } },
         tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${ctx.raw}% of trips` } }
       },
       scales: {
-        x: { grid: { display: false }, ticks: { color: THEME.text } },
-        y: { grid: { color: THEME.grid }, ticks: { callback: v => `${v}%`, color: THEME.text } }
+        x: {
+          grid: { display: false },
+          ticks: {
+            color: THEME.text,
+            autoSkip: false,
+            maxRotation: 0,
+            font: { size: 10 }
+          }
+        },
+        y: {
+          grid: { color: THEME.grid },
+          ticks: { callback: v => `${v}%`, color: THEME.text, font: { size: 10 } }
+        }
       }
     }
   });
@@ -682,11 +820,22 @@ function initChartDayOfWeek() {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        legend: { position: 'top', labels: { boxWidth: 12 } }
+        legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11 } } }
       },
       scales: {
-        x: { grid: { display: false }, ticks: { color: THEME.text } },
-        y: { grid: { color: THEME.grid }, ticks: { color: THEME.text } }
+        x: {
+          grid: { display: false },
+          ticks: {
+            color: THEME.text,
+            autoSkip: false,
+            maxRotation: 0,
+            font: { size: 10 }
+          }
+        },
+        y: {
+          grid: { color: THEME.grid },
+          ticks: { color: THEME.text, font: { size: 10 } }
+        }
       }
     }
   });

@@ -88,34 +88,45 @@ body {
   width: 100%;
 }
 
-/* ---------------- SIDEBAR ---------------- */
+/* ---------------- HOVERING LEFT NAVBAR OVERLAY ---------------- */
+.sidebar-hover-zone {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 14px;
+  height: 100vh;
+  z-index: 994;
+  cursor: pointer;
+  background: transparent;
+}
+
 .pbi-sidebar {
-  width: 250px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 285px;
+  max-width: 85vw;
+  height: 100vh;
   background: var(--bg-sidebar);
   color: #f8fafc;
   display: flex;
   flex-direction: column;
-  flex-shrink: 0;
-  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 100;
-  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  z-index: 1000;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  transform: translateX(-100%);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s ease;
+  box-shadow: none;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
-.pbi-sidebar.collapsed {
-  width: 72px;
-}
-
-.pbi-sidebar.collapsed .brand-text,
-.pbi-sidebar.collapsed .sidebar-section-title,
-.pbi-sidebar.collapsed .nav-label,
-.pbi-sidebar.collapsed .nav-badge,
-.pbi-sidebar.collapsed .sidebar-footer {
-  display: none;
-}
-
-.pbi-sidebar.collapsed .nav-item {
-  justify-content: center;
-  padding: 0.8rem 0;
+/* Hovering or Pinned Open State */
+.pbi-sidebar.open,
+.pbi-sidebar.hover-active,
+.pbi-sidebar.mobile-open {
+  transform: translateX(0);
+  box-shadow: 16px 0 45px rgba(0, 0, 0, 0.45);
 }
 
 .sidebar-brand {
@@ -158,7 +169,7 @@ body {
 }
 
 .btn-sidebar-close {
-  display: none;
+  display: flex;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.12);
   color: #ffffff;
@@ -712,6 +723,11 @@ body.dark-mode .badge-tag.live {
 .grid-span-8 { grid-column: span 8; }
 .grid-span-12 { grid-column: span 12; }
 
+.grid-layout-12 > div {
+  min-width: 0;
+  max-width: 100%;
+}
+
 .pbi-visual-card {
   background: var(--bg-card);
   border: 1px solid var(--border-card);
@@ -720,6 +736,11 @@ body.dark-mode .badge-tag.live {
   box-shadow: var(--shadow-card);
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .visual-card-header {
@@ -789,6 +810,17 @@ body.dark-mode .badge-tag.live {
 .chart-canvas-box {
   position: relative;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.chart-canvas-box canvas {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
 }
 
 .h-300 { height: 300px; }
@@ -1474,50 +1506,6 @@ html, body {
    BREAKPOINT: 1024px (Tablets, iPad Landscape/Portrait & Small Laptops)
    -------------------------------------------------------------------------- */
 @media (max-width: 1024px) {
-  /* Sidebar Drawer Overlay */
-  .pbi-sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    width: 290px;
-    max-width: 82vw;
-    height: 100vh;
-    z-index: 1000;
-    transform: translateX(-100%);
-    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s ease;
-    box-shadow: none;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .pbi-sidebar.mobile-open {
-    transform: translateX(0);
-    box-shadow: 14px 0 36px rgba(0, 0, 0, 0.45);
-  }
-
-  /* When drawer opens on mobile/tablet, force display all labels and badges */
-  .pbi-sidebar.mobile-open .brand-text,
-  .pbi-sidebar.mobile-open .sidebar-section-title,
-  .pbi-sidebar.mobile-open .nav-label,
-  .pbi-sidebar.mobile-open .nav-badge,
-  .pbi-sidebar.mobile-open .sidebar-footer {
-    display: flex !important;
-  }
-
-  .pbi-sidebar.mobile-open .sidebar-footer {
-    display: block !important;
-  }
-
-  .pbi-sidebar.mobile-open .nav-item {
-    justify-content: flex-start !important;
-    padding: 0.7rem 0.85rem !important;
-  }
-
-  .btn-sidebar-close {
-    display: flex;
-  }
-
   /* Grid Layout: Stack 12-column spans into full width cards */
   .grid-layout-12 {
     grid-template-columns: 1fr;
@@ -1625,8 +1613,8 @@ html, body {
 
   .btn-theme-toggle,
   .btn-icon {
-    width: 34px;
-    height: 34px;
+    width: 36px;
+    height: 36px;
   }
 
   /* Global Slicers Ribbon: Clean 2-column touch-friendly grid */
@@ -1657,8 +1645,11 @@ html, body {
   .slicer-control {
     width: 100%;
     min-height: 36px;
-    padding: 0.4rem 0.6rem;
-    font-size: 0.78rem;
+    padding: 0.4rem 0.55rem;
+    font-size: 0.76rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
   }
 
   .btn-clear-filters {
@@ -1698,12 +1689,16 @@ html, body {
     padding: 0.85rem 0.85rem;
   }
 
-  /* KPI Visuals Grid */
+  /* KPI Visuals Grid: 2-column with 5th card spanning 2 columns */
   .kpi-banner-grid,
   .kpi-banner-grid.four-col {
     grid-template-columns: repeat(2, 1fr);
     gap: 0.75rem;
     margin-bottom: 1rem;
+  }
+
+  .kpi-banner-grid:not(.four-col) > .new-card-visual:last-child {
+    grid-column: span 2;
   }
 
   .new-card-visual {
@@ -1756,6 +1751,11 @@ html, body {
     height: 290px;
   }
 
+  /* Top 10 Stations Horizontal Bar Chart Canvas Height */
+  .chart-canvas-box:has(#chartTopStations) {
+    height: 310px;
+  }
+
   /* Callout Banners */
   .executive-callout-card {
     padding: 0.9rem 1rem;
@@ -1789,13 +1789,14 @@ html, body {
   }
 
   .pbi-data-table {
-    min-width: 580px;
+    min-width: 410px;
+    width: 100%;
   }
 
   .pbi-data-table th,
   .pbi-data-table td {
-    padding: 0.6rem 0.7rem;
-    font-size: 0.76rem;
+    padding: 0.45rem 0.35rem;
+    font-size: 0.69rem;
     white-space: nowrap;
   }
 
@@ -1813,7 +1814,7 @@ html, body {
     font-size: 1.4rem;
   }
 
-  /* 24x7 Heatmap sticky first column */
+  /* 24x7 Heatmap sticky first column (day headers) */
   .heatmap-scroll-box {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
@@ -1826,7 +1827,7 @@ html, body {
     font-size: 0.68rem;
   }
 
-  .hm-cell:first-child {
+  .heatmap-grid-layout > .hm-cell:nth-child(25n + 1) {
     position: sticky;
     left: 0;
     background: var(--bg-card);
@@ -1834,7 +1835,7 @@ html, body {
     box-shadow: 2px 0 4px rgba(0, 0, 0, 0.08);
   }
 
-  body.dark-mode .hm-cell:first-child {
+  body.dark-mode .heatmap-grid-layout > .hm-cell:nth-child(25n + 1) {
     background: var(--bg-card);
   }
 
@@ -1944,12 +1945,62 @@ html, body {
 }
 
 /* --------------------------------------------------------------------------
+   BREAKPOINT: 540px (Small Tablets & Large Phones - User Viewport 502px)
+   -------------------------------------------------------------------------- */
+@media (max-width: 540px) {
+  /* Header Title & ARR badge */
+  .page-title {
+    font-size: 1rem;
+  }
+
+  .quick-stat-badge .stat-title {
+    display: none;
+  }
+
+  .quick-stat-badge {
+    padding: 0.28rem 0.5rem;
+  }
+
+  .stat-val {
+    font-size: 0.76rem;
+  }
+
+  /* Stack KPI Cards cleanly into 1 column for optimal readability */
+  .kpi-banner-grid,
+  .kpi-banner-grid.four-col {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+  }
+
+  .kpi-banner-grid:not(.four-col) > .new-card-visual:last-child {
+    grid-column: span 1;
+  }
+
+  .new-card-visual {
+    padding: 0.8rem 0.9rem;
+  }
+
+  .card-big-val {
+    font-size: 1.55rem;
+  }
+
+  .card-bottom-labels {
+    font-size: 0.68rem;
+  }
+
+  /* Top 10 Stations Chart Height */
+  .chart-canvas-box:has(#chartTopStations) {
+    height: 295px;
+  }
+}
+
+/* --------------------------------------------------------------------------
    BREAKPOINT: 480px (Standard & Small Mobile Phones)
    -------------------------------------------------------------------------- */
 @media (max-width: 480px) {
   /* Header Title & ARR badge */
   .page-title {
-    font-size: 0.98rem;
+    font-size: 0.95rem;
   }
 
   .page-desc {
@@ -1959,16 +2010,12 @@ html, body {
     overflow: hidden;
   }
 
-  .quick-stat-badge .stat-title {
-    display: none;
-  }
-
   .quick-stat-badge {
     padding: 0.25rem 0.45rem;
   }
 
   .stat-val {
-    font-size: 0.75rem;
+    font-size: 0.74rem;
   }
 
   /* Slicers 1-column on ultra-compact screens */
@@ -1979,13 +2026,6 @@ html, body {
 
   .btn-clear-filters {
     grid-column: span 1;
-  }
-
-  /* KPI 1-column stacked */
-  .kpi-banner-grid,
-  .kpi-banner-grid.four-col {
-    grid-template-columns: 1fr;
-    gap: 0.6rem;
   }
 
   .new-card-visual {
